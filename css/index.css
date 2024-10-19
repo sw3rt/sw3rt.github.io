@@ -3816,9 +3816,6 @@ figure.highlight pre .javascript .function {
   color: #a0c4d4;
   text-decoration: underline;
 }
-#post-info #post-meta time {
-  display: none;
-}
 #nav {
   position: absolute;
   top: 0;

